@@ -1,0 +1,442 @@
+import 'dart:io';
+import 'dart:convert';
+import 'dart:async';
+
+// fkjdfjkdfjkdf
+//  sdsdklsdklsdklsdklsd
+//  ssdjsdjksdjksdjksdjk
+class SourceFile {
+  String _fileName;
+  final _chars = _Character(_Character.$eof);
+  static final codec = Utf8Codec(allowMalformed: true);
+  _Character _aChar;
+  int _aColumn;
+  int _aLevel;
+
+  SourceFile(this._fileName);
+
+  /// dssdlsdl
+  Future<bool> read() async {
+    var result = false;
+
+    try {
+      final file = File(_fileName);
+      final bytes = await file.readAsBytes();
+      final codes = codec.decode(bytes);
+
+      for (var i = 0; i < codes.length; i++) {
+        _chars.addPrev(_Character(codes.codeUnitAt(i)));
+      }
+
+      reset();
+      result = true;
+    } catch (e, s) {
+      print('${e.toString()}\r\n${s.toString()}');
+    }
+
+    return result;
+  }
+
+  Future<bool> write() async {
+    var result = false;
+
+    try {
+      final file = File(_fileName);
+
+      await file.writeAsString(this.toString());
+
+      result = true;
+    } catch (e, s) {
+      print('${e.toString()}\r\n${s.toString()}');
+    }
+
+    return result;
+  }
+
+  Future<bool> copyTo(String destFile, {bool newSource = true}) async {
+    bool result = false;
+
+    try {
+      var file = File(_fileName);
+
+      await file.copy(destFile);
+
+      if (newSource) {
+        _fileName = destFile;
+      }
+      // wwwwww
+      result = true;
+    } catch (e, s) {
+      print('$e\r\n$s');
+    } finally {
+      print('exit');
+    }
+    ;
+    return result;
+  }
+
+/**
+weeweewew
+qwwqwqwqw
+*/
+  @override
+  String toString() {
+    var char = _chars.next;
+    var buffer = new StringBuffer();
+
+    while (char.charType != _CharacterType.Eof) {
+      buffer.writeCharCode(char.code);
+      char = char.next;
+    }
+
+    return buffer.toString();
+  }
+
+  bool parse() {
+    var result = false;
+
+    reset();
+    columns();
+
+    reset();
+    _parseInternal();
+
+    return result;
+  }
+
+  bool format() {
+    reset();
+
+    while (_aChar.charType != _CharacterType.Eof) {
+      if (_aChar.charType == _CharacterType.Normal) {
+        if (_aChar.isOpenBrace() && _aChar.lastOnLine()) {
+          var close = _aChar.findLevelClose();
+
+          if (close == null) {
+            return false;
+          }
+
+          if (close.column < _aChar.column) {
+            if (_aChar.firstOnLine()) {
+              for (var cnt = _aChar.column - close.column; cnt > 0; cnt--) {
+                _aChar.prev.remove();
+              }
+            } else {
+              _aChar.prev.insertString('\r\n');
+              _aChar.prev.insertSpaces(close.column);
+            }
+          }
+        }
+      }
+
+      _next();
+    }
+    return true;
+  }
+
+  bool _parseInternal() {
+    while (_aChar.charType != _CharacterType.Eof) {
+      if (_aChar.isMultilineString()) {
+        if (!_parseString(true)) {
+          return false;
+        }
+      } else if (_aChar.isString()) {
+        if (!_parseString(false)) {
+          return false;
+        }
+      } else if (_aChar.isLineComment()) {
+        while (_aChar.charType != _CharacterType.Eof && !_aChar.isEOL()) {
+          _aChar.charType = _CharacterType.Comment;
+          _nextUpdate();
+        }
+      } else if (_aChar.isComment()) {
+        int commentLevel = 0;
+        _aChar.charType = _CharacterType.Comment;
+
+        do {
+          if (_aChar.isEndComment()) {
+            commentLevel--;
+            _aChar.charType = _CharacterType.Comment;
+            _nextUpdate();
+          } else if (_aChar.isComment()) {
+            commentLevel++;
+          }
+
+          _aChar.charType = _CharacterType.Comment;
+          _nextUpdate();
+        } while (commentLevel > 0);
+      } else if (_aChar.isOpenBrace()) {
+        _aChar.level = ++_aLevel;
+        _nextUpdate();
+        if (!_parseInternal()) {
+          return false;
+        }
+      } else if (_aChar.isCloseBrace()) {
+        _aChar.level = _aLevel--;
+        _nextUpdate();
+        return true;
+      } else {
+        _nextUpdate();
+      }
+    }
+
+    return _aLevel == 0;
+  }
+
+  bool _parseString(bool multiline) {
+    var commentChar = _aChar.code;
+
+    _aChar.charType = _CharacterType.Str;
+    _nextUpdate().charType = _CharacterType.Str;
+    if (multiline) {
+      _nextUpdate().charType = _CharacterType.Str;
+      _nextUpdate().charType = _CharacterType.Str;
+    }
+
+    while (_aChar.charType != _CharacterType.Eof) {
+      if (_aChar.prev.code != _Character.$backshlash) {
+        if (multiline) {
+          if (_aChar.isMultilineString()) {
+            _nextUpdate().charType = _CharacterType.Str;
+            _nextUpdate().charType = _CharacterType.Str;
+            return true;
+          }
+        } else {
+          if (_aChar.isString()) {
+            return true;
+          } else if (_aChar.isEOL()) {
+            return false;
+          }
+        }
+
+        if (_aChar.code == _Character.$dolar &&
+            _aChar.next.code == _Character.$openBraceCu) {
+          _parseInternal();
+        }
+      } else {
+        if (_aChar.next.code == _Character.$backshlash) {
+          _nextUpdate().charType = _CharacterType.Str;
+        }
+      }
+
+      _nextUpdate().charType = _CharacterType.Str;
+    }
+
+    return false;
+  }
+
+  void columns() {
+    reset();
+
+    while (_nextUpdate().charType != _CharacterType.Eof);
+  }
+
+  void reset() {
+    _aChar = _chars.next;
+    _aChar.column = 0;
+    _aChar.level = 0;
+    _aColumn = 1;
+    _aLevel = 0;
+  }
+
+  _Character _nextUpdate() {
+    if (_aChar.charType != _CharacterType.Eof) {
+      _aChar = _aChar.next;
+      _aChar.level = _aLevel;
+
+      if (_aChar.code == _Character.$cr || _aChar.code == _Character.$lf) {
+        _aColumn = 0;
+      } else {
+        _aChar.column = _aColumn++;
+      }
+    }
+
+    return _aChar;
+  }
+
+  _Character _next() {
+    if (_aChar.charType != _CharacterType.Eof) {
+      _aChar = _aChar.next;
+    }
+
+    return _aChar;
+  }
+}
+
+class _Character {
+  _CharacterType charType = _CharacterType.Normal;
+  int level = 0;
+  int column = 0;
+  int code;
+  _Character prev, next;
+
+  static const $eof = -1;
+  static const $openBrace = 0x28; //'('
+  static const $closeBrace = 0x29; //')'
+  static const $openBraceSq = 0x5b; // '['
+  static const $closeBraceSq = 0x5d; //']'
+  static const $openBraceCu = 0x7b; //'{'
+  static const $closeBraceCu = 0x7d; //'}'
+  static const $singleQuotes = 0x2c; //'\''
+  static const $doubleQuotes = 0x22; //'"'
+  static const $backshlash = 0x5c; //'\\'
+  static const $shlash = 0x2f; //'/'
+  static const $asterisks = 0x2a; //'*'
+  static const $dolar = 0x24; //'$'
+
+  static const $cr = 0x0d; //'\r'
+  static const $lf = 0x0a; //'\n'
+
+  static final $openBraceList = {$openBrace, $openBraceCu, $openBraceSq};
+
+  static final $closeBraceList = {$closeBrace, $closeBraceCu, $closeBraceSq};
+
+  _Character(this.code) {
+    if (code < 0) {
+      charType = _CharacterType.Eof;
+    }
+
+    prev = this;
+    next = this;
+  }
+
+  bool isOpenBrace() => $openBraceList.contains(code);
+
+  bool isCloseBrace() => $closeBraceList.contains(code);
+
+  bool isString() => (code == $singleQuotes || code == $doubleQuotes);
+
+  bool isMultilineString() =>
+      (isString() && this.next.code == code && this.next.next.code == code);
+
+  bool isComment() => (code == $shlash && next.code == $asterisks);
+
+  bool isEndComment() => (code == $asterisks && next.code == $shlash);
+
+  bool isLineComment() => (code == $shlash && next.code == $shlash);
+
+  bool isEOL() => (code == $cr || code == $lf);
+
+  bool isSpace() => (code == 0x20 ||
+      code == 0x09 ||
+      code == 0xc ||
+      code == 0xb ||
+      code == 0xa0);
+
+  int getCloseBrace() {
+    switch (code) {
+      case $openBrace:
+        return $closeBrace;
+
+      case $openBraceSq:
+        return $closeBraceSq;
+
+      case $openBraceCu:
+        return $closeBraceCu;
+
+      default:
+        return 0;
+    }
+  }
+
+  bool lastOnLine() {
+    var char = this.next;
+
+    while (true) {
+      if (char.charType == _CharacterType.Eof ||
+          char.isLineComment() ||
+          char.isEOL()) {
+        return true;
+      } else if (!char.isSpace()) {
+        return false;
+      } else {
+        char = char.next;
+      }
+    }
+  }
+
+  bool firstOnLine() {
+    var char = this.prev;
+
+    while (true) {
+      if (char.charType == _CharacterType.Eof || char.isEOL()) {
+        return true;
+      } else if (!char.isSpace()) {
+        return false;
+      } else {
+        char = char.prev;
+      }
+    }
+  }
+
+  bool removeSpacesRight() {
+    var char = this.prev;
+
+    while (true) {
+      if (char.charType == _CharacterType.Eof || char.isEOL()) {
+        return true;
+      } else if (!char.isSpace()) {
+        return false;
+      } else {
+        char = char.prev;
+      }
+    }
+  }
+
+  _Character findLevelClose() {
+    // ignore: avoid_init_to_null
+    _Character result = null;
+
+    if (isOpenBrace()) {
+      var char = next;
+
+      while (char.charType != _CharacterType.Eof) {
+        if (char.isCloseBrace() &&
+            char.charType == _CharacterType.Normal &&
+            char.level == this.level) {
+          if (char.code == this.getCloseBrace()) {
+            result = char;
+          }
+          break;
+        }
+
+        char = char.next;
+      }
+    }
+
+    return result;
+  }
+
+  void remove() {
+    this.prev.next = next;
+    this.next.prev = prev;
+    this.next = this;
+    this.prev = this;
+  }
+
+  _Character add(_Character char) {
+    char.prev = this;
+    char.next = this.next;
+    this.next.prev = char;
+    this.next = char;
+    return char;
+  }
+
+  _Character addPrev(_Character char) => prev.add(char);
+
+  void insertSpaces(int count) {
+    while (count-- > 0) {
+      add(_Character(0x20));
+    }
+  }
+
+  void insertString(String text) {
+    var char = next;
+
+    for (int i = 0; i < text.length; i++) {
+      char.addPrev(_Character(text.codeUnitAt(i)));
+    }
+  }
+}
+
+enum _CharacterType { Normal, Comment, Str, Eof }
