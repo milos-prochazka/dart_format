@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
 
-class SourceFile 
+class SourceFile
 {
   String _fileName;
   final _chars = _Character(_Character.$eof);
@@ -13,25 +13,25 @@ class SourceFile
 
   SourceFile(this._fileName) {}
 
-  Future<bool> read() async 
+  Future<bool> read() async
   {
     var result = false;
 
-    try 
+    try
     {
       final file = File(_fileName);
       final bytes = await file.readAsBytes();
       final codes = codec.decode(bytes);
 
-      for (var i = 0; i < codes.length; i++) 
+      for (var i = 0; i < codes.length; i++)
       {
         _chars.addPrev(_Character(codes.codeUnitAt(i)));
       }
 
       reset();
       result = true;
-    } 
-    catch (e, s) 
+    }
+    catch (e, s)
     {
       print('${e.toString()}\r\n${s.toString()}');
     }
@@ -39,19 +39,19 @@ class SourceFile
     return result;
   }
 
-  Future<bool> write() async 
+  Future<bool> write() async
   {
     var result = false;
 
-    try 
+    try
     {
       final file = File(_fileName);
 
       await file.writeAsString(this.toString());
 
       result = true;
-    } 
-    catch (e, s) 
+    }
+    catch (e, s)
     {
       print('${e.toString()}\r\n${s.toString()}');
     }
@@ -59,19 +59,19 @@ class SourceFile
     return result;
   }
 
-  Future<bool> deleteFile() async 
+  Future<bool> deleteFile() async
   {
     var result = false;
 
-    try 
+    try
     {
       final file = File(_fileName);
 
       await file.delete();
 
       result = true;
-    } 
-    catch (e, s) 
+    }
+    catch (e, s)
     {
       print('${e.toString()}\r\n${s.toString()}');
     }
@@ -79,19 +79,19 @@ class SourceFile
     return result;
   }
 
-  Future<bool> identicalFile(String anotherFile) async 
+  Future<bool> identicalFile(String anotherFile) async
   {
     var result = true;
 
-    try 
+    try
     {
       final file = File(anotherFile);
 
       var anotherText = await file.readAsString();
 
       result = anotherText == this.toString();
-    } 
-    catch (e, s) 
+    }
+    catch (e, s)
     {
       print('${e.toString()}\r\n${s.toString()}');
     }
@@ -100,24 +100,24 @@ class SourceFile
 
   }
 
-  Future<bool> copyTo(String destFile, {bool newSource = true}) async 
+  Future<bool> copyTo(String destFile, {bool newSource = true}) async
   {
     bool result = false;
 
-    try 
+    try
     {
       var file = File(_fileName);
 
       await file.copy(destFile);
 
-      if (newSource) 
+      if (newSource)
       {
         _fileName = destFile;
       }
 
       result = true;
-    } 
-    catch (e, s) 
+    }
+    catch (e, s)
     {
       print('$e\r\n$s');
     }
@@ -125,24 +125,24 @@ class SourceFile
     return result;
   }
 
-  Future<bool> renameTo(String destFile, {bool newSource = true}) async 
+  Future<bool> renameTo(String destFile, {bool newSource = true}) async
   {
     bool result = false;
 
-    try 
+    try
     {
       var file = File(_fileName);
 
       await file.rename(destFile);
 
-      if (newSource) 
+      if (newSource)
       {
         _fileName = destFile;
       }
 
       result = true;
-    } 
-    catch (e, s) 
+    }
+    catch (e, s)
     {
       print('$e\r\n$s');
     }
@@ -151,12 +151,12 @@ class SourceFile
   }
 
   @override
-  String toString() 
+  String toString()
   {
     var char = _chars.next;
     var buffer = new StringBuffer();
 
-    while (char.charType != _CharacterType.Eof) 
+    while (char.charType != _CharacterType.Eof)
     {
       buffer.writeCharCode(char.code);
       char = char.next;
@@ -165,7 +165,7 @@ class SourceFile
     return buffer.toString().trim();
   }
 
-  bool parse() 
+  bool parse()
   {
     var result = false;
 
@@ -178,33 +178,33 @@ class SourceFile
     return result;
   }
 
-  bool format(int ident) 
+  bool format(int ident)
   {
     reset();
 
-    while (_aChar.charType != _CharacterType.Eof) 
+    while (_aChar.charType != _CharacterType.Eof)
     {
-      if (_aChar.charType == _CharacterType.Normal) 
+      if (_aChar.charType == _CharacterType.Normal)
       {
-        if (_aChar.isOpenBrace() && _aChar.lastOnLine()) 
+        if (_aChar.isOpenBrace() && _aChar.lastOnLine())
         {
           var close = _aChar.findLevelClose();
 
-          if (close == null) 
+          if (close == null)
           {
             return false;
           }
 
-          if (close.column < _aChar.column) 
+          if (close.column < _aChar.column)
           {
-            if (_aChar.firstOnLine()) 
+            if (_aChar.firstOnLine())
             {
-              for (var cnt = _aChar.column - close.column; cnt > 0; cnt--) 
+              for (var cnt = _aChar.column - close.column; cnt > 0; cnt--)
               {
                 _aChar.prev.remove();
               }
-            } 
-            else 
+            }
+            else
             {
               _aChar.prev.insertString('\r\n');
               _aChar.prev.insertSpaces(close.column);
@@ -219,22 +219,22 @@ class SourceFile
     columns();
     reset();
 
-    while (_aChar.charType != _CharacterType.Eof) 
+    while (_aChar.charType != _CharacterType.Eof)
     {
       _breakPatternAmongBraces(['else', 'catch', 'while', 'finally']);
       _nextLine();
     }
 
-    if (ident > 2) 
+    if (ident > 2)
     {
       columns();
       reset();
 
-      while (_aChar.charType != _CharacterType.Eof) 
+      while (_aChar.charType != _CharacterType.Eof)
       {
         var char = _aChar.skipSpace();
         if (char.charType == _CharacterType.Normal ||
-            (char.charType == _CharacterType.Comment && char.isLineComment())) 
+            (char.charType == _CharacterType.Comment && char.isLineComment()))
         {
           char.prev.insertSpaces(char.column ~/ 2 * ident - char.column);
         }
@@ -245,71 +245,71 @@ class SourceFile
     return true;
   }
 
-  bool _parseInternal() 
+  bool _parseInternal()
   {
-    while (_aChar.charType != _CharacterType.Eof) 
+    while (_aChar.charType != _CharacterType.Eof)
     {
-      if (_aChar.isMultilineString()) 
+      if (_aChar.isMultilineString())
       {
-        if (!_parseString(true, _aChar.prev.code == _Character.$r)) 
+        if (!_parseString(true, _aChar.prev.code == _Character.$r))
         {
           return false;
         }
-      } 
-      else if (_aChar.isString()) 
+      }
+      else if (_aChar.isString())
       {
-        if (!_parseString(false, _aChar.prev.code == _Character.$r)) 
+        if (!_parseString(false, _aChar.prev.code == _Character.$r))
         {
           return false;
         }
-      } 
-      else if (_aChar.isLineComment()) 
+      }
+      else if (_aChar.isLineComment())
       {
-        while (_aChar.charType != _CharacterType.Eof && !_aChar.isEOL()) 
+        while (_aChar.charType != _CharacterType.Eof && !_aChar.isEOL())
         {
           _aChar.charType = _CharacterType.Comment;
           _nextUpdate();
         }
-      } 
-      else if (_aChar.isComment()) 
+      }
+      else if (_aChar.isComment())
       {
         int commentLevel = 0;
         _aChar.charType = _CharacterType.Comment;
 
-        do 
+        do
         {
-          if (_aChar.isEndComment()) 
+          if (_aChar.isEndComment())
           {
             commentLevel--;
             _aChar.charType = _CharacterType.Comment;
             _nextUpdate();
-          } 
-          else if (_aChar.isComment()) 
+          }
+          else if (_aChar.isComment())
           {
             commentLevel++;
           }
 
           _aChar.charType = _CharacterType.Comment;
           _nextUpdate();
-        } 
+        }
         while (commentLevel > 0);
-      } 
-      else if (_aChar.isOpenBrace()) 
+      }
+      else if (_aChar.isOpenBrace())
       {
         _aChar.level = ++_aLevel;
         _nextUpdate();
-        if (!_parseInternal()) 
+        if (!_parseInternal())
         {
           return false;
         }
-      } 
-      else if (_aChar.isCloseBrace()) 
+      }
+      else if (_aChar.isCloseBrace())
       {
         _aChar.level = _aLevel--;
         _nextUpdate();
         return true;
-      } 
-      else 
+      }
+      else
       {
         _nextUpdate();
       }
@@ -318,63 +318,63 @@ class SourceFile
     return _aLevel == 0;
   }
 
-  bool _parseString(bool multiline, bool raw) 
+  bool _parseString(bool multiline, bool raw)
   {
     var stringCode = _aChar.code;
     _aChar.charType = _CharacterType.Str;
-    
+
     _nextUpdate().charType = _CharacterType.Str;
-    if (multiline) 
+    if (multiline)
     {
       _nextUpdate().charType = _CharacterType.Str;
       _nextUpdate().charType = _CharacterType.Str;
     }
 
-    while (_aChar.charType != _CharacterType.Eof) 
+    while (_aChar.charType != _CharacterType.Eof)
     {
-      if (raw || _aChar.code != _Character.$backshlash) 
+      if (raw || _aChar.code != _Character.$backshlash)
       {
-        if (multiline) 
+        if (multiline)
         {
-          if (_aChar.code == stringCode && 
-              _aChar.next.code == stringCode && 
-              _aChar.next.next.code == stringCode) 
+          if (_aChar.code == stringCode &&
+              _aChar.next.code == stringCode &&
+              _aChar.next.next.code == stringCode)
           {
             _nextUpdate().charType = _CharacterType.Str;
             _nextUpdate().charType = _CharacterType.Str;
             _nextUpdate();
             return true;
           }
-        } 
-        else 
+        }
+        else
         {
-          if (_aChar.code == stringCode) 
+          if (_aChar.code == stringCode)
           {
             _nextUpdate();
             return true;
-          } 
-          else if (_aChar.isEOL()) 
+          }
+          else if (_aChar.isEOL())
           {
             return false;
           }
         }
 
-        if (_aChar.code == _Character.$dolar && _aChar.next.code == _Character.$openBraceCu) 
+        if (_aChar.code == _Character.$dolar && _aChar.next.code == _Character.$openBraceCu)
         {
           _nextUpdate().charType = _CharacterType.Normal;
           _aChar.level = ++_aLevel;
           _nextUpdate().charType = _CharacterType.Normal;
-          if (!_parseInternal()) 
+          if (!_parseInternal())
           {
             return false;
-          } 
-          else 
+          }
+          else
           {
             _aChar = _aChar.prev;
           }
         }
-      } 
-      else 
+      }
+      else
       {
         _nextUpdate().charType = _CharacterType.Str;
       }
@@ -385,14 +385,14 @@ class SourceFile
     return false;
   }
 
-  void columns() 
+  void columns()
   {
     reset();
 
     while (_nextUpdate().charType != _CharacterType.Eof);
   }
 
-  void reset() 
+  void reset()
   {
     _aChar = _chars.next;
     _aChar.column = 0;
@@ -401,19 +401,19 @@ class SourceFile
     _aLevel = 0;
   }
 
-  _Character _nextUpdate() 
+  _Character _nextUpdate()
   {
-    if (_aChar.charType != _CharacterType.Eof) 
+    if (_aChar.charType != _CharacterType.Eof)
     {
       _aChar = _aChar.next;
       _aChar.level = _aLevel;
       //print(String.fromCharCode(_aChar.code & 0xffff));
 
-      if (_aChar.code == _Character.$cr || _aChar.code == _Character.$lf) 
+      if (_aChar.code == _Character.$cr || _aChar.code == _Character.$lf)
       {
         _aColumn = 0;
-      } 
-      else 
+      }
+      else
       {
         _aChar.column = _aColumn++;
       }
@@ -422,9 +422,9 @@ class SourceFile
     return _aChar;
   }
 
-  _Character? _next() 
+  _Character? _next()
   {
-    if (_aChar.charType != _CharacterType.Eof) 
+    if (_aChar.charType != _CharacterType.Eof)
     {
       _aChar = _aChar.next;
       //stdout.write(String.fromCharCode(_aChar.code&0xffff));
@@ -433,14 +433,14 @@ class SourceFile
     return _aChar;
   }
 
-  _Character? _nextLine() 
+  _Character? _nextLine()
   {
-    while (_aChar.charType != _CharacterType.Eof && _aChar.code != _Character.$cr && _aChar.code != _Character.$lf) 
+    while (_aChar.charType != _CharacterType.Eof && _aChar.code != _Character.$cr && _aChar.code != _Character.$lf)
     {
       _next();
     }
 
-    while (_aChar.charType != _CharacterType.Eof && (_aChar.code == _Character.$cr || _aChar.code == _Character.$lf)) 
+    while (_aChar.charType != _CharacterType.Eof && (_aChar.code == _Character.$cr || _aChar.code == _Character.$lf))
     {
       _next();
     }
@@ -448,34 +448,34 @@ class SourceFile
     return _aChar;
   }
 
-  bool _breakPatternAmongBraces(List<String> patterns) 
+  bool _breakPatternAmongBraces(List<String> patterns)
   {
     var result = false;
     var char = _aChar.skipSpace();
 
-    if (char.code == _Character.$closeBraceCu && char.charType == _CharacterType.Normal) 
+    if (char.code == _Character.$closeBraceCu && char.charType == _CharacterType.Normal)
     {
       var closeColumn = char.column;
 
       char = char.next.skipSpace();
       var wordBeginChar = char;
 
-      for (var i = 0; i < patterns.length; i++) 
+      for (var i = 0; i < patterns.length; i++)
       {
         _Character? pchar = char;
         var pattern = patterns[i];
 
         var ci;
-        for (ci = 0; ci < pattern.length; ci++, pchar = pchar.next) 
+        for (ci = 0; ci < pattern.length; ci++, pchar = pchar.next)
         {
           //print("${String.fromCharCode(pchar.code&0xffff)}:${String.fromCharCode(pattern.codeUnitAt(ci))}");
-          if (pattern.codeUnitAt(ci) != pchar!.code) 
+          if (pattern.codeUnitAt(ci) != pchar!.code)
           {
             break;
           }
         }
 
-        if (ci == pattern.length) 
+        if (ci == pattern.length)
         {
           wordBeginChar.prev.insertString("\r\n");
           wordBeginChar.prev.insertSpaces(closeColumn);
@@ -489,7 +489,7 @@ class SourceFile
   }
 }
 
-class _Character 
+class _Character
 {
   _CharacterType charType = _CharacterType.Normal;
   int level = 0;
@@ -519,12 +519,12 @@ class _Character
 
   static final $closeBraceList = {$closeBrace, $closeBraceCu, $closeBraceSq};
 
-  _Character(this.code) 
+  _Character(this.code)
   {
     prev = this;
     next = this;
 
-    if (code < 0) 
+    if (code < 0)
     {
       charType = _CharacterType.Eof;
     }
@@ -548,9 +548,9 @@ class _Character
 
   bool isSpace() => (code == 0x20 || code == 0x09 || code == 0xc || code == 0xb || code == 0xa0);
 
-  int getCloseBrace() 
+  int getCloseBrace()
   {
-    switch (code) 
+    switch (code)
     {
       case $openBrace:
         return $closeBrace;
@@ -566,32 +566,32 @@ class _Character
     }
   }
 
-  bool lastOnLine() 
+  bool lastOnLine()
   {
     var char = this.next;
 
-    while (true) 
+    while (true)
     {
-      if (char.charType == _CharacterType.Eof || char.isLineComment() || char.isEOL()) 
+      if (char.charType == _CharacterType.Eof || char.isLineComment() || char.isEOL())
       {
         return true;
-      } 
-      else if (!char.isSpace()) 
+      }
+      else if (!char.isSpace())
       {
         return false;
-      } 
-      else 
+      }
+      else
       {
         char = char.next;
       }
     }
   }
 
-  _Character skipSpace() 
+  _Character skipSpace()
   {
     _Character char = this;
 
-    while (char.isSpace()) 
+    while (char.isSpace())
     {
       char = char.next;
     }
@@ -599,63 +599,63 @@ class _Character
     return char;
   }
 
-  bool firstOnLine() 
+  bool firstOnLine()
   {
     var char = this.prev;
 
-    while (true) 
+    while (true)
     {
-      if (char.charType == _CharacterType.Eof || char.isEOL()) 
+      if (char.charType == _CharacterType.Eof || char.isEOL())
       {
         return true;
-      } 
-      else if (!char.isSpace()) 
+      }
+      else if (!char.isSpace())
       {
         return false;
-      } 
-      else 
+      }
+      else
       {
         char = char.prev;
       }
     }
   }
 
-  bool removeSpacesRight() 
+  bool removeSpacesRight()
   {
     var char = this.prev;
 
-    while (true) 
+    while (true)
     {
-      if (char.charType == _CharacterType.Eof || char.isEOL()) 
+      if (char.charType == _CharacterType.Eof || char.isEOL())
       {
         return true;
-      } 
-      else if (!char.isSpace()) 
+      }
+      else if (!char.isSpace())
       {
         return false;
-      } 
-      else 
+      }
+      else
       {
         char = char.prev;
       }
     }
   }
 
-  _Character? findLevelClose() 
+  _Character? findLevelClose()
   {
     // ignore: avoid_init_to_null
     _Character? result = null;
 
-    if (isOpenBrace()) 
+    if (isOpenBrace())
     {
       var char = next;
 
-      while (char.charType != _CharacterType.Eof) 
+      while (char.charType != _CharacterType.Eof)
       {
-          
-        if (char.isCloseBrace() && char.charType == _CharacterType.Normal && char.level == this.level) 
+
+        if (char.isCloseBrace() && char.charType == _CharacterType.Normal && char.level == this.level)
         {
-          if (char.code == this.getCloseBrace()) 
+          if (char.code == this.getCloseBrace())
           {
             result = char;
           }
@@ -669,7 +669,7 @@ class _Character
     return result;
   }
 
-  void remove() 
+  void remove()
   {
     this.prev.next = next;
     this.next.prev = prev;
@@ -677,7 +677,7 @@ class _Character
     this.prev = this;
   }
 
-  _Character add(_Character char) 
+  _Character add(_Character char)
   {
     char.prev = this;
     char.next = this.next;
@@ -688,19 +688,19 @@ class _Character
 
   _Character addPrev(_Character char) => prev.add(char);
 
-  void insertSpaces(int count) 
+  void insertSpaces(int count)
   {
-    while (count-- > 0) 
+    while (count-- > 0)
     {
       add(_Character(0x20));
     }
   }
 
-  void insertString(String text) 
+  void insertString(String text)
   {
     var char = next;
 
-    for (int i = 0; i < text.length; i++) 
+    for (int i = 0; i < text.length; i++)
     {
       char.addPrev(_Character(text.codeUnitAt(i)));
     }

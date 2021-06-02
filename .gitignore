@@ -7,3 +7,7 @@ build/
 
 # Directory created by dartdoc
 doc/api/
+
+# Test files and directories
+out/
+#*.bak
