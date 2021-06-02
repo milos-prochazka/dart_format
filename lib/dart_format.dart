@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:dart_format/SourceFile.dart';
+import 'package:tuple/tuple.dart';
 
 void command(List<String> args) 
 {
@@ -10,6 +11,7 @@ void command(List<String> args)
   } 
   else 
   {
+   
     _main(args);
   }
 }
@@ -34,7 +36,6 @@ Future<bool> renameFile(String oldPath, String newPath) async
 
 void _main(List<String> args) async 
 {
-  bool result = true;
   var fileName = args[0];
   var tabSize = 4;
 
@@ -45,36 +46,52 @@ void _main(List<String> args) async
 
   if (await FileSystemEntity.isFile(fileName)) 
   {
-    result = await processFile(fileName, tabSize);
+    _showResult(await processFile(fileName, tabSize));
   } 
   else if (await FileSystemEntity.isDirectory(fileName)) 
   {
     Directory dir = Directory(fileName);
 
+    var futures = <Future<Tuple2<bool,String>>>[]; 
+
     await for (var file in dir.list(recursive: true, followLinks: false)) 
     {
       if (await FileSystemEntity.isFile(file.path) && file.path.endsWith('.dart')) 
       {
-        processFile(file.path, tabSize);
-        /*if (!await processFile(file.path, tabSize)) 
-                {
-                    break;
-                }*/
+        futures.add(processFile(file.path, tabSize));
       }
+    }
+
+    var results = <Tuple2<bool,String>>[]; 
+
+    for (var future in futures)
+    {
+        results.add(await future);
+    }
+
+    for (var result in results)
+    {
+        _showResult(result);
     }
   } 
   else 
   {
-    print("file '$fileName' does not exist");
+    print("File '$fileName' does not exist");
   }
 }
 
-Future<bool> processFile(String fileName, int tabSize) async 
+void _showResult(Tuple2<bool,String> result)
 {
-  bool result = false;
+    print("The file '${result.item2}' ${result.item1?'OK':'ERROR'}");
+}
+
+Future<Tuple2<bool,String>> processFile(String fileName, int tabSize) async 
+{
+  bool result= false;
+
   var src = SourceFile(fileName);
 
-  print("The file '$fileName'");
+  print("Load file '$fileName'");
 
   if (await src.copyTo(path.setExtension(fileName, '.bak'), newSource: false)) 
   {
@@ -86,5 +103,5 @@ Future<bool> processFile(String fileName, int tabSize) async
     }
   }
 
-  return result;
+  return Tuple2<bool,String>(result,fileName);
 }

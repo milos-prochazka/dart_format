@@ -254,6 +254,7 @@ class SourceFile
 
   bool _parseString(bool multiline, bool raw) 
   {
+    var stringCode = _aChar.code;
     _aChar.charType = _CharacterType.Str;
     _nextUpdate().charType = _CharacterType.Str;
     if (multiline) 
@@ -268,19 +269,21 @@ class SourceFile
       {
         if (multiline) 
         {
-          if (_aChar.isMultilineString()) 
+          if (_aChar.code == stringCode && 
+              _aChar.next.code == stringCode && 
+              _aChar.next.next.code == stringCode) 
           {
             _nextUpdate().charType = _CharacterType.Str;
             _nextUpdate().charType = _CharacterType.Str;
-            _nextUpdate().charType = _CharacterType.Str;
+            _nextUpdate();
             return true;
           }
         } 
         else 
         {
-          if (_aChar.isString()) 
+          if (_aChar.code == stringCode) 
           {
-            _nextUpdate().charType = _CharacterType.Str;
+            _nextUpdate();
             return true;
           } 
           else if (_aChar.isEOL()) 
@@ -582,6 +585,7 @@ class _Character
 
       while (char.charType != _CharacterType.Eof) 
       {
+          
         if (char.isCloseBrace() && char.charType == _CharacterType.Normal && char.level == this.level) 
         {
           if (char.code == this.getCloseBrace()) 
