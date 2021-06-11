@@ -11,6 +11,10 @@ class SourceFile
   int _aColumn = 0;
   int _aLevel = 0;
 
+  int tabSize = 0;
+  int _aTabSize = 0;
+  var _tabSizeStack = <int>[];
+
   SourceFile(this._fileName) {}
 
   Future<bool> read() async
@@ -178,7 +182,7 @@ class SourceFile
     return result;
   }
 
-  bool format(int ident)
+  bool format()
   {
     reset();
 
@@ -225,7 +229,7 @@ class SourceFile
       _nextLine();
     }
 
-    if (ident > 2)
+    if (tabSize > 2)
     {
       columns();
       reset();
@@ -236,13 +240,50 @@ class SourceFile
         if (char.charType == _CharacterType.Normal ||
             (char.charType == _CharacterType.Comment && char.isLineComment()))
         {
-          char.prev.insertSpaces(char.column ~/ 2 * ident - char.column);
+          char.prev.insertSpaces(char.column ~/ 2 * char.tabSize - char.column);
         }
         _nextLine();
       }
     }
 
     return true;
+  }
+
+
+  void parseTabSize()
+  {
+      reset();
+      _aTabSize = tabSize;
+
+      while (_aChar.charType != _CharacterType.Eof)
+      {
+
+          var ch = _aChar.cmpString("//#set-tab");
+
+          if (ch!=null)
+          {
+              ch = ch.skipSpace();
+              final t = ch.parseInt(-1);
+
+              if (t>=2 && t<=10)
+              {
+                  _tabSizeStack.add(_aTabSize);
+                  _aTabSize = t;
+              }
+          }
+          else
+          {
+              ch = _aChar.cmpString("//#pop-tab");
+              if (_tabSizeStack.isNotEmpty)
+              {
+                  _aTabSize = _tabSizeStack.last;
+                  _tabSizeStack.removeLast();
+              }
+          }
+          _aChar.tabSize = _aTabSize;
+
+          _aChar = _aChar.next;
+      }
   }
 
   bool _parseInternal()
@@ -399,6 +440,7 @@ class SourceFile
     _aChar.level = 0;
     _aColumn = 1;
     _aLevel = 0;
+    _aTabSize = tabSize;
   }
 
   _Character _nextUpdate()
@@ -493,6 +535,7 @@ class _Character
 {
   _CharacterType charType = _CharacterType.Normal;
   int level = 0;
+  int tabSize = 2;
   int column = 0;
   int code;
   late _Character prev, next;
@@ -547,6 +590,43 @@ class _Character
   bool isEOL() => (code == $cr || code == $lf);
 
   bool isSpace() => (code == 0x20 || code == 0x09 || code == 0xc || code == 0xb || code == 0xa0);
+
+  _Character? cmpString(String string)
+  {
+      _Character result = this;
+      for(final code in string.codeUnits)
+      {
+          if (code != result.code)
+          {
+              return null;
+          }
+      }
+
+      return result;
+  }
+
+  int parseInt(int defValue)
+  {
+      int result = 0;
+      _Character ch = this;
+
+      if (ch.code < /*$0*/0x30 || ch.code > /*$9*/0x39)
+      {
+          return defValue;
+      }
+      else
+      {
+          while (ch.code >= /*$0*/0x30 && ch.code <= /*$9*/0x39)
+          {
+              result = 10*result + (ch.code - /*$0*/0x30);
+              ch = ch.next;
+          }
+
+          return result;
+      }
+
+  }
+
 
   int getCloseBrace()
   {

@@ -104,8 +104,9 @@ Future<Tuple2<bool,String>> processFile(String fileName, int tabSize) async
     var res = await Process.run('dart.bat', ['format', tmpName, '-l', '120']);
     if (res.exitCode == 0)
     {
+      tmp.tabSize = tabSize;
       result = (tabSize == 0) ||
-          ((await tmp.read()) && (await tmp.parse()) && (await tmp.format(tabSize)) && (await tmp.write()));
+          ((await tmp.read()) && (await tmp.parse()) && (await tmp.format()) && (await tmp.write()));
 
       if (result && ! await tmp.identicalFile(fileName))
       {

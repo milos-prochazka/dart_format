@@ -7,7 +7,7 @@ void main(List<String> arguments)
     {
         arguments = [r'.\test.dartx', '4'];
     }
-//#end*/
+//#end
 
 
   //for (var match in matches)
