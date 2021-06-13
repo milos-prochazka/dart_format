@@ -5,7 +5,8 @@ void main(List<String> arguments)
 //#debug
     if (arguments.isEmpty)
     {
-        arguments = [r'.\test.dartx', '4'];
+        //arguments = [r'.\test.dartx', '4'];
+        arguments = [r'..\dart_format_test', '4'];
     }
 //#end
 

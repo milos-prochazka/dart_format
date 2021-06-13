@@ -177,6 +177,8 @@ class SourceFile
     columns();
 
     reset();
+    parseTabSize();
+    reset();
     result = _parseInternal();
 
     return result;
@@ -263,10 +265,14 @@ class SourceFile
           if (ch!=null)
           {
               ch = ch.skipSpace();
-              final t = ch.parseInt(-1);
+              var t = ch.parseInt(-1);
 
-              if (t>=2 && t<=10)
+              if (t>0)
               {
+
+                  if (t<2) t= 2;
+                  else if (t > 10) t=10;
+
                   _tabSizeStack.add(_aTabSize);
                   _aTabSize = t;
               }
@@ -274,10 +280,13 @@ class SourceFile
           else
           {
               ch = _aChar.cmpString("//#pop-tab");
-              if (_tabSizeStack.isNotEmpty)
+              if (ch!=null)
               {
-                  _aTabSize = _tabSizeStack.last;
-                  _tabSizeStack.removeLast();
+                  if (_tabSizeStack.isNotEmpty)
+                  {
+                      _aTabSize = _tabSizeStack.last;
+                      _tabSizeStack.removeLast();
+                  }
               }
           }
           _aChar.tabSize = _aTabSize;
@@ -600,6 +609,7 @@ class _Character
           {
               return null;
           }
+          result = result.next;
       }
 
       return result;
