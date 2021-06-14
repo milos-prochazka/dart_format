@@ -1,3 +1,4 @@
+cd ..
 git stash push -m "git pull - %date% %time%"
 git checkout master
 git fetch origin master

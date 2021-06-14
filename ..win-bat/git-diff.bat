@@ -1,3 +1,4 @@
+cd ..
 git archive -o .git_tmp.zip %1
 rd "%TEMP%\gitdiff" /q /s
 mkdir "%TEMP%\gitdiff"

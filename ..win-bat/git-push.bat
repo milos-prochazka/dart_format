@@ -1,3 +1,4 @@
+cd ..
 if .%1.==.. goto syntax
 dart-prep --enable-all .\
 git add --all
