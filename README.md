@@ -19,7 +19,8 @@ if (isTrue)
 
 The parameter can be used to specify the size of the indentation (in steps of 2 spaces).
 
-**Syntax:**
+**Command line arguments:**
+
 dart-format <source> [tab-size]
 
   * <source> - Input file or folder. If a folder is specified, it is scanned, and formatting is performed on all files with a .dart extension. Folder searches are performed recursively, and dart files are also searched in nested folders.
