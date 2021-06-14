@@ -26,7 +26,7 @@ dart-format <source> [tab-size]
 
   * [tab-size] - indent size.  If 0 is specified, only formatting with DART is performed. The default is 4.
 
-*Processing a macro in a source file*
+**Processing a macro in a source file**
 
   * //#set-tab-size - Change the indent size. Valid from the command to the end of the file, or to the next change. A range of 2 to 10 can be specified.
 
