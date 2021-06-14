@@ -1,6 +1,6 @@
 # dart-format
 
-Program for formatting source files in DART. The program performs pre-formatting using Dart. This is so that the folder where DART is located is in PATH.
+Program for formatting source files in DART. The program performs pre-formatting using Dart.  It is therefore necessary that the folder in which the DART is located is in PATH.
 
 Reformats the standard format:
 ```dart
