@@ -1,4 +1,5 @@
-#dart-format
+# dart-format
+
 Program for formatting source files in DART. The program performs pre-formatting using Dart. This is so that the folder where DART is located is in PATH.
 
 Reformats the standard format:
@@ -18,7 +19,7 @@ if (isTrue)
 
 The parameter can be used to specify the size of the indentation (in steps of 2 spaces).
 
-*Syntax:*
+**Syntax:**
 dart-format <source> [tab-size]
 
   * <source> - Input file or folder. If a folder is specified, it is scanned, and formatting is performed on all files with a .dart extension. Folder searches are performed recursively, and dart files are also searched in nested folders.
