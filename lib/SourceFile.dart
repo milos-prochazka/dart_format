@@ -538,6 +538,30 @@ class SourceFile
 
     return result;
   }
+
+  bool _breakMultipleCloseBraces()
+  {
+      bool result = false;
+      const braceList = const <int> { /*$)*/(0x29), /*$]*/(0x5D)};
+      const commaList = const <int> { /*$,*/(0x2C), /*$;*/(0x3B)};
+
+      var char = _aChar.skipSpace();
+
+      if (braceList.contains(char.code) && braceList.contains(char.next.code))
+      {
+          final breakChar = char.next;
+          char = breakChar.next;
+
+          while (braceList.contains(char.code))
+          {
+            char = char.next;
+          }
+
+
+      }
+
+      return result;
+  }
 }
 
 class _Character
@@ -562,10 +586,10 @@ class _Character
   static const $shlash = 0x2f; //'/'
   static const $asterisks = 0x2a; //'*'
   static const $dolar = 0x24; //'$'
-  static const $r = 0x72; //'r'
+  static const $r = /*$r*/(0x72);
 
-  static const $cr = 0x0d; //'\r'
-  static const $lf = 0x0a; //'\n'
+  static const $cr = /*$\r*/(0xD);
+  static const $lf = /*$\n*/(0xA);
 
   static final $openBraceList = {$openBrace, $openBraceCu, $openBraceSq};
 
@@ -620,15 +644,15 @@ class _Character
       int result = 0;
       _Character ch = this;
 
-      if (ch.code < /*$0*/0x30 || ch.code > /*$9*/0x39)
+      if (ch.code < /*$0*/(0x30)|| ch.code > /*$9*/(0x39)
       {
           return defValue;
       }
       else
       {
-          while (ch.code >= /*$0*/0x30 && ch.code <= /*$9*/0x39)
+          while (ch.code >= /*$0*/(0x30)&& ch.code <= /*$9*/(0x39)
           {
-              result = 10*result + (ch.code - /*$0*/0x30);
+              result = 10*result + (ch.code - /*$0*/(0x30);
               ch = ch.next;
           }
 

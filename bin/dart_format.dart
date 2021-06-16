@@ -8,7 +8,7 @@ void main(List<String> arguments)
         //arguments = [r'.\test.dartx', '4'];
         arguments = [r'..\dart_format_test', '4'];
     }
-//#end
+//#end DEBUG line:5
 
 
   //for (var match in matches)

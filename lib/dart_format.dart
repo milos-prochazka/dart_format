@@ -11,7 +11,6 @@ void command(List<String> args)
   }
   else
   {
-
     _main(args);
   }
 }
