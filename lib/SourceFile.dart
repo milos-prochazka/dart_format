@@ -585,7 +585,7 @@ class _Character
   static const $backshlash = 0x5c; //'\\'
   static const $shlash = 0x2f; //'/'
   static const $asterisks = 0x2a; //'*'
-  static const $dolar = 0x24; //'$'
+  static const $dolar = /*$$*/(0x24);
   static const $r = /*$r*/(0x72);
 
   static const $cr = /*$\r*/(0xD);
@@ -644,15 +644,15 @@ class _Character
       int result = 0;
       _Character ch = this;
 
-      if (ch.code < /*$0*/(0x30)|| ch.code > /*$9*/(0x39)
+      if (ch.code < /*$0*/(0x30)|| ch.code > /*$9*/(0x39))
       {
           return defValue;
       }
       else
       {
-          while (ch.code >= /*$0*/(0x30)&& ch.code <= /*$9*/(0x39)
+          while (ch.code >= /*$0*/(0x30)&& ch.code <= /*$9*/(0x39))
           {
-              result = 10*result + (ch.code - /*$0*/(0x30);
+              result = 10*result + (ch.code - /*$0*/(0x30));
               ch = ch.next;
           }
 
