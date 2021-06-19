@@ -222,7 +222,7 @@ class SourceFile
       _next();
     }
 
-    columns();
+    //columns();
     reset();
 
     while (_aChar.charType != _CharacterType.Eof)
@@ -231,7 +231,7 @@ class SourceFile
       _nextLine();
     }
 
-    if (tabSize > 2)
+    /*if (tabSize > 2)
     {
       columns();
       reset();
@@ -246,7 +246,9 @@ class SourceFile
         }
         _nextLine();
       }
-    }
+    }*/
+    _setIntent();
+
 
     return true;
   }
@@ -458,7 +460,7 @@ class SourceFile
     {
       _aChar = _aChar.next;
       _aChar.level = _aLevel;
-      //print(String.fromCharCode(_aChar.code & 0xffff));
+      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
 
       if (_aChar.code == _Character.$cr || _aChar.code == _Character.$lf)
       {
@@ -537,6 +539,28 @@ class SourceFile
     }
 
     return result;
+  }
+
+
+  void _setIntent()
+  {
+      reset();
+
+      while (_aChar.charType != _CharacterType.Eof)
+      {
+          final linebegin = _aChar.prev;
+
+          if (_aChar.charType == _CharacterType.Normal)
+          {
+              var first =_aChar.skipSpace();
+              print ('Intent ${first.level}:${first.code.toRadixString(16)} "${String.fromCharCode(first.code)}"');
+              linebegin.next = first;
+              var level = first.level - ((first.isOpenBrace() || first.isCloseBrace()) ? 1: 0 );
+              linebegin.insertSpaces(level*first.tabSize);
+          }
+
+          _nextLine();
+      }
   }
 
   bool _breakMultipleCloseBraces()
