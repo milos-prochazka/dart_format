@@ -1,6 +1,6 @@
 name: dart_format
-description: A sample command-line application.
-# version: 1.0.0
+description: Formatting dart source files 
+version: 1.0.0
 # homepage: https://www.example.com
 
 environment:
