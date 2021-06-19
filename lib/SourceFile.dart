@@ -193,7 +193,7 @@ class SourceFile
     {
       if (_aChar.charType == _CharacterType.Normal)
       {
-        if (_aChar.isOpenBrace() && _aChar.lastOnLine())
+        if (_aChar.isOpenBrace() && _aChar.lastOnLine() && !_aChar.firstOnLine())
         {
           var close = _aChar.findLevelClose();
 
@@ -217,33 +217,15 @@ class SourceFile
       _next();
     }
 
-    //columns();
     reset();
-
     while (_aChar.charType != _CharacterType.Eof)
     {
       _breakPatternAmongBraces(['else', 'catch', 'while', 'finally']);
       _nextLine();
     }
 
-    /*if (tabSize > 2)
-    {
-      columns();
-      reset();
-
-      while (_aChar.charType != _CharacterType.Eof)
-      {
-        var char = _aChar.skipSpace();
-        if (char.charType == _CharacterType.Normal ||
-            (char.charType == _CharacterType.Comment && char.isLineComment()))
-        {
-          char.prev.insertSpaces(char.column ~/ 2 * char.tabSize - char.column);
-        }
-        _nextLine();
-      }
-    }*/
-    _setIntent();
-
+    reset();
+    _setIntent(-1,0);
 
     return true;
   }
@@ -458,8 +440,9 @@ class SourceFile
       _aChar = _aChar.next;
       _aChar.level = _aLevel;
       _aChar.line = _aLine;
-      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
-
+//#debug
+//##      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
+//#end DEBUG line:443
       if (_aChar.code == _Character.$lf)
       {
         if (_aChar.prev.code == _Character.$cr)
@@ -556,21 +539,63 @@ class SourceFile
   }
 
 
-  void _setIntent()
+  void _setIntent(int switchBraceLevel,int switchNestingLevel)
   {
-      reset();
 
-      while (_aChar.charType != _CharacterType.Eof)
+      while (_aChar.charType != _CharacterType.Eof && _aChar.level >= switchBraceLevel)
       {
           final linebegin = _aChar.prev;
 
           if (_aChar.charType == _CharacterType.Normal)
           {
               var first =_aChar.skipSpace();
+
               print ('Intent ${first.level}:${first.code.toRadixString(16)} "${String.fromCharCode(first.code)}"');
               linebegin.next = first;
+
               var level = first.level - ((first.isOpenBrace() || first.isCloseBrace()) ? 1: 0 );
-              linebegin.insertSpaces(level*first.tabSize);
+
+              if (first.cmpString(';') != null)
+              {
+                  var char = linebegin;
+
+                  while (char.isEOL() || char.isSpace())
+                  {
+                      char = char.prev;
+                  }
+
+                  if(char.charType == _CharacterType.Normal)
+                  {
+                      char.next = first;
+                      _nextLine();
+                      continue;
+                  }
+              }
+
+              if ((first.cmpString('case') ?? first.cmpString('default')) != null)
+              {
+                  if (first.level > switchBraceLevel)
+                  {
+                      _setIntent(first.level,switchNestingLevel+1);
+                      continue;
+                  }
+                  else
+                  {
+                      linebegin.insertSpaces((level+switchNestingLevel-1)*first.tabSize);
+                  }
+              }
+              else
+              {
+                  if (switchNestingLevel>0)
+                  {
+                    if (first.code == _Character.$closeBraceCu && first.level == switchBraceLevel )
+                    {
+                        level--;
+                    }
+                    level+=switchNestingLevel;
+                  }
+                  linebegin.insertSpaces(level*first.tabSize);
+              }
           }
 
           _nextLine();
@@ -590,7 +615,7 @@ class _Character
   late _Character prev, next;
 
   static const $eof = -1;
-  static const $openBrace = 0x28; //'('
+  static const $openBrace = /*$(*/(0x28);
   static const $closeBrace = 0x29; //')'
   static const $openBraceSq = 0x5b; // '['
   static const $closeBraceSq = 0x5d; //']'
@@ -717,25 +742,13 @@ class _Character
     }
   }
 
-  _Character skipSpace()
-  {
-    _Character char = this;
-
-    while (char.isSpace())
-    {
-      char = char.next;
-    }
-
-    return char;
-  }
-
   bool firstOnLine()
   {
     var char = this.prev;
 
     while (true)
     {
-      if (char.charType == _CharacterType.Eof || char.isEOL())
+      if (char.charType == _CharacterType.Eof ||  char.isEOL())
       {
         return true;
       }
@@ -748,7 +761,22 @@ class _Character
         char = char.prev;
       }
     }
+
   }
+
+  _Character skipSpace()
+  {
+    _Character char = this;
+
+    while (char.isSpace())
+    {
+      char = char.next;
+    }
+
+    return char;
+  }
+
+
 
   bool removeSpacesRight()
   {
