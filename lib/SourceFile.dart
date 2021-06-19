@@ -10,6 +10,7 @@ class SourceFile
   _Character _aChar = _Character(_Character.$eof);
   int _aColumn = 0;
   int _aLevel = 0;
+  int _aLine = 0;
 
   int tabSize = 0;
   int _aTabSize = 0;
@@ -200,21 +201,15 @@ class SourceFile
           {
             return false;
           }
-
-          if (close.column < _aChar.column)
+          else if (close.line > _aChar.line)
           {
-            if (_aChar.firstOnLine())
-            {
-              for (var cnt = _aChar.column - close.column; cnt > 0; cnt--)
-              {
-                _aChar.prev.remove();
-              }
-            }
-            else
-            {
               _aChar.prev.insertString('\r\n');
-              _aChar.prev.insertSpaces(close.column);
-            }
+              while (close!.next.isCloseBrace())
+              {
+                  var aux = close;
+                  close = close.next;
+                  aux.insertString('\r\n');
+              }
           }
         }
       }
@@ -449,8 +444,10 @@ class SourceFile
     _aChar = _chars.next;
     _aChar.column = 0;
     _aChar.level = 0;
+    _aChar.line = 0;
     _aColumn = 1;
     _aLevel = 0;
+    _aLine = 0;
     _aTabSize = tabSize;
   }
 
@@ -460,10 +457,27 @@ class SourceFile
     {
       _aChar = _aChar.next;
       _aChar.level = _aLevel;
+      _aChar.line = _aLine;
       print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
 
-      if (_aChar.code == _Character.$cr || _aChar.code == _Character.$lf)
+      if (_aChar.code == _Character.$lf)
       {
+        if (_aChar.prev.code == _Character.$cr)
+        {
+            _aChar.column = _aChar.prev.column;
+            _aChar.line = _aChar.prev.line;
+        }
+        else
+        {
+          _aChar.column = _aColumn;
+          _aLine++;
+          _aColumn = 0;
+        }
+      }
+      else if (_aChar.code == _Character.$cr)
+      {
+        _aChar.column = _aColumn;
+        _aLine++;
         _aColumn = 0;
       }
       else
@@ -563,35 +577,13 @@ class SourceFile
       }
   }
 
-  bool _breakMultipleCloseBraces()
-  {
-      bool result = false;
-      const braceList = const <int> { /*$)*/(0x29), /*$]*/(0x5D)};
-      const commaList = const <int> { /*$,*/(0x2C), /*$;*/(0x3B)};
-
-      var char = _aChar.skipSpace();
-
-      if (braceList.contains(char.code) && braceList.contains(char.next.code))
-      {
-          final breakChar = char.next;
-          char = breakChar.next;
-
-          while (braceList.contains(char.code))
-          {
-            char = char.next;
-          }
-
-
-      }
-
-      return result;
-  }
 }
 
 class _Character
 {
   _CharacterType charType = _CharacterType.Normal;
   int level = 0;
+  int line = 0;
   int tabSize = 2;
   int column = 0;
   int code;
