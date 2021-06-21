@@ -193,7 +193,7 @@ class SourceFile
     {
       if (_aChar.charType == _CharacterType.Normal)
       {
-        if (_aChar.isOpenBrace() && _aChar.lastOnLine() && !_aChar.firstOnLine())
+        if (_aChar.isOpenBracket() && !_aChar.firstOnLine())
         {
           var close = _aChar.findLevelClose();
 
@@ -201,15 +201,15 @@ class SourceFile
           {
             return false;
           }
-          else if (close.line > _aChar.line)
+          else if ( (close.line > _aChar.line &&  _aChar.lastOnLine()) ||
+                    (close.line > _aChar.line+1 ))
           {
+              if (!_aChar.lastOnLine()) _aChar.insertString("\r\n");
+
               _aChar.prev.insertString('\r\n');
-              while (close!.next.isCloseBrace())
-              {
-                  var aux = close;
-                  close = close.next;
-                  aux.insertString('\r\n');
-              }
+
+              if (!close.firstOnLine()) close.prev.insertString('\r\n');
+
           }
         }
       }
@@ -220,7 +220,7 @@ class SourceFile
     reset();
     while (_aChar.charType != _CharacterType.Eof)
     {
-      _breakPatternAmongBraces(['else', 'catch', 'while', 'finally']);
+      _breakPatternAmongBrackets(['else', 'catch', 'while', 'finally']);
       _nextLine();
     }
 
@@ -323,7 +323,7 @@ class SourceFile
         }
         while (commentLevel > 0);
       }
-      else if (_aChar.isOpenBrace())
+      else if (_aChar.isOpenBracket())
       {
         _aChar.level = ++_aLevel;
         _nextUpdate();
@@ -332,7 +332,7 @@ class SourceFile
           return false;
         }
       }
-      else if (_aChar.isCloseBrace())
+      else if (_aChar.isCloseBracket())
       {
         _aChar.level = _aLevel--;
         _nextUpdate();
@@ -388,7 +388,7 @@ class SourceFile
           }
         }
 
-        if (_aChar.code == _Character.$dolar && _aChar.next.code == _Character.$openBraceCu)
+        if (_aChar.code == _Character.$dolar && _aChar.next.code == _Character.$openBracketCu)
         {
           _nextUpdate().charType = _CharacterType.Normal;
           _aChar.level = ++_aLevel;
@@ -441,7 +441,7 @@ class SourceFile
       _aChar.level = _aLevel;
       _aChar.line = _aLine;
 //#debug
-      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
+//##      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
 //#end DEBUG line:443
       if (_aChar.code == _Character.$lf)
       {
@@ -498,12 +498,12 @@ class SourceFile
     return _aChar;
   }
 
-  bool _breakPatternAmongBraces(List<String> patterns)
+  bool _breakPatternAmongBrackets(List<String> patterns)
   {
     var result = false;
     var char = _aChar.skipSpace();
 
-    if (char.code == _Character.$closeBraceCu && char.charType == _CharacterType.Normal)
+    if (char.code == _Character.$closeBracketCu && char.charType == _CharacterType.Normal)
     {
       var closeColumn = char.column;
 
@@ -539,21 +539,22 @@ class SourceFile
   }
 
 
-  void _setIntent(int switchBraceLevel,int switchNestingLevel)
+  void _setIntent(int switchBracketLevel,int switchNestingLevel)
   {
 
-      while (_aChar.charType != _CharacterType.Eof && _aChar.level >= switchBraceLevel)
+      while (_aChar.charType != _CharacterType.Eof && _aChar.level >= switchBracketLevel)
       {
           final linebegin = _aChar.prev;
 
           if (_aChar.charType == _CharacterType.Normal)
           {
               var first =_aChar.skipSpace();
-
-              print ('Intent ${first.level}:${first.code.toRadixString(16)} "${String.fromCharCode(first.code)}"');
+//#debug
+//##              print ('Intent ${first.level}:${first.code.toRadixString(16)} "${String.fromCharCode(first.code)}"');
+//#end DEBUG line:552
               linebegin.next = first;
 
-              var level = first.level - ((first.isOpenBrace() || first.isCloseBrace()) ? 1: 0 );
+              var level = first.level - ((first.isOpenBracket() || first.isCloseBracket()) ? 1: 0 );
 
               if (first.cmpString(';') != null)
               {
@@ -574,7 +575,7 @@ class SourceFile
 
               if ((first.cmpString('case') ?? first.cmpString('default')) != null)
               {
-                  if (first.level > switchBraceLevel)
+                  if (first.level > switchBracketLevel)
                   {
                       _setIntent(first.level,switchNestingLevel+1);
                       continue;
@@ -588,7 +589,7 @@ class SourceFile
               {
                   if (switchNestingLevel>0)
                   {
-                    if (first.code == _Character.$closeBraceCu && first.level == switchBraceLevel )
+                    if (first.code == _Character.$closeBracketCu && first.level == switchBracketLevel )
                     {
                         level--;
                     }
@@ -615,12 +616,12 @@ class _Character
   late _Character prev, next;
 
   static const $eof = -1;
-  static const $openBrace = /*$(*/(0x28);
-  static const $closeBrace = 0x29; //')'
-  static const $openBraceSq = 0x5b; // '['
-  static const $closeBraceSq = 0x5d; //']'
-  static const $openBraceCu = 0x7b; //'{'
-  static const $closeBraceCu = 0x7d; //'}'
+  static const $openBracket = /*$(*/(0x28);
+  static const $closeBracket = 0x29; //')'
+  static const $openBracketSq = 0x5b; // '['
+  static const $closeBracketSq = 0x5d; //']'
+  static const $openBracketCu = 0x7b; //'{'
+  static const $closeBracketCu = 0x7d; //'}'
   static const $singleQuotes = 0x27; //'\''
   static const $doubleQuotes = 0x22; //'"'
   static const $backshlash = 0x5c; //'\\'
@@ -632,9 +633,9 @@ class _Character
   static const $cr = /*$\r*/(0xD);
   static const $lf = /*$\n*/(0xA);
 
-  static final $openBraceList = {$openBrace, $openBraceCu, $openBraceSq};
+  static final $openBracketList = {$openBracket, $openBracketCu, $openBracketSq};
 
-  static final $closeBraceList = {$closeBrace, $closeBraceCu, $closeBraceSq};
+  static final $closeBracketList = {$closeBracket, $closeBracketCu, $closeBracketSq};
 
   _Character(this.code)
   {
@@ -647,9 +648,9 @@ class _Character
     }
   }
 
-  bool isOpenBrace() => $openBraceList.contains(code);
+  bool isOpenBracket() => $openBracketList.contains(code);
 
-  bool isCloseBrace() => $closeBraceList.contains(code);
+  bool isCloseBracket() => $closeBracketList.contains(code);
 
   bool isString() => (code == $singleQuotes || code == $doubleQuotes);
 
@@ -703,18 +704,18 @@ class _Character
   }
 
 
-  int getCloseBrace()
+  int getCloseBracket()
   {
     switch (code)
     {
-      case $openBrace:
-        return $closeBrace;
+      case $openBracket:
+        return $closeBracket;
 
-      case $openBraceSq:
-        return $closeBraceSq;
+      case $openBracketSq:
+        return $closeBracketSq;
 
-      case $openBraceCu:
-        return $closeBraceCu;
+      case $openBracketCu:
+        return $closeBracketCu;
 
       default:
         return 0;
@@ -753,6 +754,27 @@ class _Character
         return true;
       }
       else if (!char.isSpace())
+      {
+        return false;
+      }
+      else
+      {
+        char = char.prev;
+      }
+    }
+  }
+
+  bool closeBracketsFirstOnLine()
+  {
+    var char = this.prev;
+
+    while (true)
+    {
+      if (char.charType == _CharacterType.Eof ||  char.isEOL())
+      {
+        return true;
+      }
+      else if (!char.isSpace() && !char.isCloseBracket())
       {
         return false;
       }
@@ -804,16 +826,16 @@ class _Character
     // ignore: avoid_init_to_null
     _Character? result = null;
 
-    if (isOpenBrace())
+    if (isOpenBracket())
     {
       var char = next;
 
       while (char.charType != _CharacterType.Eof)
       {
 
-        if (char.isCloseBrace() && char.charType == _CharacterType.Normal && char.level == this.level)
+        if (char.isCloseBracket() && char.charType == _CharacterType.Normal && char.level == this.level)
         {
-          if (char.code == this.getCloseBrace())
+          if (char.code == this.getCloseBracket())
           {
             result = char;
           }

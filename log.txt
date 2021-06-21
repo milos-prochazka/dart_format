@@ -1,287 +1,38 @@
-Load file '..\dart_format_test\lib\common.dart'
-0:?
-0: 
-0:t
-0:o
-0:N
-0:u
-0:l
-0:l
-0:a
-0:b
-0:l
-0:e
-0:T
-0:y
-0:p
-0:e
-0:<
-0:T
-0:>
-0:(
-0:O
-0:b
-0:j
-0:e
-0:c
-0:t
-0: 
-0:i
-0:n
-0:s
-0:t
-0:a
-0:n
-0:c
-0:e
-0:)
-0: 
-0:{
-0:
-0:
-
-0: 
-0: 
-0:i
-0:f
-0: 
-0:(
-0:i
-0:n
-0:s
-0:t
-0:a
-0:n
-0:c
-0:e
-0: 
-0:i
-0:s
-0: 
-0:T
-0:)
-0: 
-0:{
-0:
-0:
-
-0: 
-0: 
-0: 
-0: 
-0:r
-0:e
-0:t
-0:u
-0:r
-0:n
-0: 
-0:i
-0:n
-0:s
-0:t
-0:a
-0:n
-0:c
-0:e
-0: 
-0:a
-0:s
-0: 
-0:T
-0:;
-0:
-0:
-
-0: 
-0: 
-0:}
-0: 
-0:e
-0:l
-0:s
-0:e
-0: 
-0:{
-0:
-0:
-
-0: 
-0: 
-0: 
-0: 
-0:r
-0:e
-0:t
-0:u
-0:r
-0:n
-0: 
-0:n
-0:u
-0:l
-0:l
-0:;
-0:
-0:
-
-0: 
-0: 
-0:}
-0:
-0:
-
-0:}
-0:
-0:
-
-0:￿
-0:?
-0: 
-0:t
-0:o
-0:N
-0:u
-0:l
-0:l
-0:a
-0:b
-0:l
-0:e
-0:T
-0:y
-0:p
-0:e
-0:<
-0:T
-0:>
-0:(
-1:O
-1:b
-1:j
-1:e
-1:c
-1:t
-1: 
-1:i
-1:n
-1:s
-1:t
-1:a
-1:n
-1:c
-1:e
-1:)
-0: 
-0:{
-1:
-1:
-
-1: 
-1: 
-1:i
-1:f
-1: 
-1:(
-2:i
-2:n
-2:s
-2:t
-2:a
-2:n
-2:c
-2:e
-2: 
-2:i
-2:s
-2: 
-2:T
-2:)
-1: 
-1:{
-2:
-2:
-
-2: 
-2: 
-2: 
-2: 
-2:r
-2:e
-2:t
-2:u
-2:r
-2:n
-2: 
-2:i
-2:n
-2:s
-2:t
-2:a
-2:n
-2:c
-2:e
-2: 
-2:a
-2:s
-2: 
-2:T
-2:;
-2:
-2:
-
-2: 
-2: 
-2:}
-1: 
-1:e
-1:l
-1:s
-1:e
-1: 
-1:{
-2:
-2:
-
-2: 
-2: 
-2: 
-2: 
-2:r
-2:e
-2:t
-2:u
-2:r
-2:n
-2: 
-2:n
-2:u
-2:l
-2:l
-2:;
-2:
-2:
-
-2: 
-2: 
-2:}
-1:
-1:
-
-1:}
-0:
-0:
-
-0:￿
-Intent 0:T
-Intent 1:{
-Intent 1: 
-Intent 0: 
-Intent 2: 
-Intent 2: 
-Intent 0: 
-Intent 0: 
-Intent 2: 
-Intent 2: 
-Intent 1:}
-The file '..\dart_format_test\lib\common.dart' OK
+dart-format v1.0.0
+Load file 'test.dartx'
+Intent 0:76 "v"
+Intent 1:7b "{"
+Intent 1:76 "v"
+Intent 2:28 "("
+Intent 2:27 "'"
+Intent 1:7d "}"
+Intent 0:40 "@"
+Intent 0:57 "W"
+Intent 1:7b "{"
+Intent 1:72 "r"
+Intent 2:28 "("
+Intent 2:61 "a"
+Intent 3:28 "("
+Intent 3:74 "t"
+Intent 3:63 "c"
+Intent 3:29 ")"
+Intent 2:62 "b"
+Intent 3:28 "("
+Intent 3:63 "c"
+Intent 5:5b "["
+Intent 5:43 "C"
+Intent 6:28 "("
+Intent 6:6c "l"
+Intent 6:63 "c"
+Intent 7:28 "("
+Intent 7:66 "f"
+Intent 7:64 "d"
+Intent 7:29 ")"
+Intent 6:29 ")"
+Intent 5:54 "T"
+Intent 5:5d "]"
+Intent 4:29 ")"
+Intent 3:29 ")"
+Intent 2:29 ")"
+Intent 1:7d "}"
+The file 'test.dartx' OK

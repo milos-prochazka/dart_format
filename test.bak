@@ -1,5 +1,25 @@
-void qaqa() 
-{
-    var htmlDoc = html.parse(
+//#set-tab 2
+void qaqa() {
+  var htmlDoc = html.parse(
       ' ${q['----']} <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html><BOdy><!-- komentar --> Hello &amp; a&#768; world! <hr><a href="www.html5rocks.com">HTML5 rocks!</a><h1>HEAD1');
+}
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+      appBar: AppBar(
+        title: Text("Safe Area"),
+        centerTitle: true,
+      ),
+      body: Form(
+          child: ListView(children: [
+        CompositedTransformTarget(
+          link: this._layerLink,
+          child: TextFormField(
+            focusNode: this._focusNode,
+            decoration: InputDecoration(labelText: 'Country'),
+          ),
+        ),
+        Text('---- Textik ---')
+      ])));
 }

@@ -5,7 +5,7 @@ import 'package:tuple/tuple.dart';
 
 void command(List<String> args)
 {
-  print ('dart-format v1.0.0');
+  print ('dart-format v1.0.1');
   if (args.isEmpty)
   {
     print('Syntax: dart_format <file or directory> [size of tabulator]');
