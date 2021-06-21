@@ -351,6 +351,7 @@ class SourceFile
   {
     var stringCode = _aChar.code;
     _aChar.charType = _CharacterType.Str;
+    _aChar.startString = true;
 
     _nextUpdate().charType = _CharacterType.Str;
     if (multiline)
@@ -441,8 +442,8 @@ class SourceFile
       _aChar.level = _aLevel;
       _aChar.line = _aLine;
 //#debug
-//##      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
-//#end DEBUG line:443
+      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
+//#end DEBUG line:444
       if (_aChar.code == _Character.$lf)
       {
         if (_aChar.prev.code == _Character.$cr)
@@ -546,12 +547,12 @@ class SourceFile
       {
           final linebegin = _aChar.prev;
 
-          if (_aChar.charType == _CharacterType.Normal)
+          if (_aChar.charType == _CharacterType.Normal || _aChar.startString)
           {
               var first =_aChar.skipSpace();
 //#debug
-//##              print ('Intent ${first.level}:${first.code.toRadixString(16)} "${String.fromCharCode(first.code)}"');
-//#end DEBUG line:552
+              print ('Intent ${first.level}:${first.code.toRadixString(16)} "${String.fromCharCode(first.code)}"');
+//#end DEBUG line:553
               linebegin.next = first;
 
               var level = first.level - ((first.isOpenBracket() || first.isCloseBracket()) ? 1: 0 );
@@ -612,6 +613,7 @@ class _Character
   int line = 0;
   int tabSize = 2;
   int column = 0;
+  bool startString = false;
   int code;
   late _Character prev, next;
 
