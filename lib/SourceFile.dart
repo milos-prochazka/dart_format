@@ -441,7 +441,7 @@ class SourceFile
       _aChar.level = _aLevel;
       _aChar.line = _aLine;
 //#debug
-//##      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
+      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
 //#end DEBUG line:443
       if (_aChar.code == _Character.$lf)
       {
