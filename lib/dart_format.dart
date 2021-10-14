@@ -5,7 +5,7 @@ import 'package:tuple/tuple.dart';
 
 void command(List<String> args)
 {
-  print ('dart-format v1.0.2');
+  print ('dart-format v1.0.3');
   if (args.isEmpty)
   {
     print('Syntax: dart_format <file or directory> [size of tabulator]');
@@ -101,7 +101,11 @@ Future<Tuple2<bool,String>> processFile(String fileName, int tabSize) async
 
   if (await src.copyTo(tmpName, newSource: false))
   {
-    var res = await Process.run('dart.bat', ['format', tmpName, '-l', '120']);
+//#if UNIX
+    var res = await Process.run('dart', ['format', tmpName, '-l', '120']);
+//#else
+//##    var res = await Process.run('dart.bat', ['format', tmpName, '-l', '120']);
+//#end if line:104
     if (res.exitCode == 0)
     {
       tmp.tabSize = tabSize;
