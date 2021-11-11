@@ -442,7 +442,7 @@ class SourceFile
       _aChar.level = _aLevel;
       _aChar.line = _aLine;
 //#debug
-//##      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
+      print("${_aChar.level}:${String.fromCharCode(_aChar.code & 0xffff)}");
 //#end DEBUG line:444
       if (_aChar.code == _Character.$lf)
       {
@@ -551,7 +551,7 @@ class SourceFile
           {
               var first =_aChar.skipSpace();
 //#debug
-//##              print ('Intent ${first.level}:${first.code.toRadixString(16)} "${String.fromCharCode(first.code)}"');
+              print ('Intent ${first.level}:${first.code.toRadixString(16)} "${String.fromCharCode(first.code)}"');
 //#end DEBUG line:553
               linebegin.next = first;
 
@@ -574,6 +574,7 @@ class SourceFile
                   }
               }
 
+              /* Vypnute case (nefungovalo)
               if ((first.cmpString('case') ?? first.cmpString('default')) != null)
               {
                   if (first.level > switchBracketLevel)
@@ -586,7 +587,7 @@ class SourceFile
                       linebegin.insertSpaces((level+switchNestingLevel-1)*first.tabSize);
                   }
               }
-              else
+              else */
               {
                   if (switchNestingLevel>0)
                   {
