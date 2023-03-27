@@ -5,7 +5,7 @@ import 'package:tuple/tuple.dart';
 
 void command(List<String> args)
 {
-  print ('dart-format v1.0.4');
+  print ('dart-format v1.0.5');
   if (args.isEmpty)
   {
     print('Syntax: dart_format <file or directory> [size of tabulator]');
@@ -53,16 +53,22 @@ void _main(List<String> args) async
     Directory dir = Directory(fileName);
 
     var futures = <Future<Tuple2<bool,String>>>[];
+    var results = <Tuple2<bool,String>>[];
 
     await for (var file in dir.list(recursive: true, followLinks: false))
     {
       if (await FileSystemEntity.isFile(file.path) && file.path.endsWith('.dart'))
       {
         futures.add(processFile(file.path, tabSize));
+        if (futures.length > 4)
+        {
+          final f = futures.first;
+          results.add(await f);
+          futures.remove(f);
+        }
       }
     }
 
-    var results = <Tuple2<bool,String>>[];
 
     for (var future in futures)
     {
@@ -105,7 +111,7 @@ Future<Tuple2<bool,String>> processFile(String fileName, int tabSize) async
     var res = await Process.run('dart', ['format', tmpName, '-l', '120']);
 //#else
     var res = await Process.run('dart.bat', ['format', tmpName, '-l', '120']);
-//#end if line:104
+//#end if line:110
     if (res.exitCode == 0)
     {
       tmp.tabSize = tabSize;
